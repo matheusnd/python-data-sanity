@@ -1,0 +1,2 @@
+id_player,first_name,last_name,number,position,team_id,league_player,id_team,name,league_team,position_check,league_check
+6,Shohei,Ohtani,17,P/DH,13,AL,13,Los Angeles Angels,AL,False,True
