@@ -2,7 +2,7 @@ from input_data import tables
 import pandas as pd
 
 
-def join_players_team(left_df_properties, right_df_properties, join_type):
+def join_dataframes(left_df_properties, right_df_properties, join_type):
     """
     Description:
         merge the dataframes according to the properties
@@ -75,38 +75,41 @@ def check_null_values(row, column_name):
 
 
 if __name__ == "__main__":
-    MAIN_DF = join_players_team(
+    MAIN_DF = join_dataframes(
         left_df_properties={"df": tables.df_players, "key": "team_id", "suffix": "_player"},
         right_df_properties={"df": tables.df_teams, "key": "id", "suffix": "_team"},
         join_type="left"
     )
 
     check_values_columns = [
-        {"column_name": "position", "values": ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "P", "DH"]},
-        {"column_name": "league_player", "values": ["AL", "NL"]}
+        {"column_name": "position", "output_column_name": "position_value_checked", "values": ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "P", "DH"]},
+        {"column_name": "league_player", "output_column_name": "league_player_value_checked", "values": ["AL", "NL"]}
     ]
 
     for check in check_values_columns:
         column_name = check["column_name"]
         values = check["values"]
-        MAIN_DF[f"{column_name}_values_checked"] = MAIN_DF.apply(lambda row: check_column_values(row, column_name, values), axis=1)
+        output_column_name = check["output_column_name"]
+        MAIN_DF[output_column_name] = MAIN_DF.apply(lambda row: check_column_values(row, column_name, values), axis=1)
 
     check_compare_columns = [
-        {"column_name": "league", "columns_to_compare": ["league_player", "league_team"]},
+        {"column_name": "league", "output_column_name": "league_compare_value_checked", "columns_to_compare": ["league_player", "league_team"]},
     ]
 
     for check in check_compare_columns:
         column_name = check["column_name"]
         columns_to_compare = check["columns_to_compare"]
-        MAIN_DF[f"{column_name}_compare_checked"] = MAIN_DF.apply(lambda row: compare_columns(row, columns_to_compare), axis=1)
+        output_column_name = check["output_column_name"]
+        MAIN_DF[output_column_name] = MAIN_DF.apply(lambda row: compare_columns(row, columns_to_compare), axis=1)
 
     check_null_value = [
-        {"column_name": "id_team"},
+        {"column_name": "id_team", "output_column_name": "id_team_null_value_checked"},
     ]
 
     for check in check_null_value:
         column_name = check["column_name"]
-        MAIN_DF[f"{column_name}_null_value_checked"] = MAIN_DF.apply(lambda row: check_null_values(row, column_name), axis=1)
+        output_column_name = check["output_column_name"]
+        MAIN_DF[output_column_name] = MAIN_DF.apply(lambda row: check_null_values(row, column_name), axis=1)
 
     # df_players_team = df_players_team[(~df_players_team["position_check"]) | (~df_players_team["league_check"])]
 

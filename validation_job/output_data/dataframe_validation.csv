@@ -1,4 +1,4 @@
-id_player,first_name,last_name,number,position,team_id,league_player,id_team,name,league_team,position_values_checked,league_player_values_checked,league_compare_checked,id_team_null_value_checked
+id_player,first_name,last_name,number,position,team_id,league_player,id_team,name,league_team,position_value_checked,league_player_value_checked,league_compare_value_checked,id_team_null_value_checked
 1,Mookie,Betts,50,RF,4,AL,4.0,Boston Red Sox,AL,True,True,True,True
 2,Mike,Trout,27,RF,13,AL,13.0,Los Angeles Angels,AL,True,True,True,True
 3,Bryce,Harper,3,RF,21,NL,21.0,Philadelphia Phillies,NL,True,True,True,True
