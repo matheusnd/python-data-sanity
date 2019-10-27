@@ -62,7 +62,7 @@ df_players = pd.DataFrame([
             'last_name': 'Altuve',
             'number': 27,
             'position': '2B',
-            'team_id': 11,
+            'team_id': 31,
             'league': 'AL'
         },
     ])

@@ -1,65 +1,114 @@
-# Write your code here
-# You are welcome to implement any data structure or algorithm of your choice.
-# You may also add additional files/directories if you find it helpful.
-
-# As your data source are pandas dataframes, you are welcome to use the pandas library to the extent of your choice.
-
-# If you use any additional libraries, please include them in requirements.txt
-# If you have any questions, please feel free to ask. The requirements of this technical test are intentionally vague
-# to allow you the freedom to implement the solution of your choice. However, they are not vague to confuse you.
-from data import tables
+from input_data import tables
 import pandas as pd
 
 
-def join_players_team(df_players, df_teams):
+def join_players_team(left_df_properties, right_df_properties, join_type):
     """
     Description:
-        merge the dataframes df_players and df_teams
-    :param df_teams: dataframe with the teams' data
-    :param df_players: dataframe with the players' data
-    :return: dataframe with the result of the merge. The columns with the same name will be with the suffixes
-        _player or _team
+        merge the dataframes according to the properties
+    :param join_type: type of the join that will be applied
+    :param right_df_properties: right dataframe's properties
+        df: dataframe object
+        key: join key
+        suffix: suffix that will be applied to columns with the same name
+    :param left_df_properties: left dataframe's properties
+        df: dataframe object
+        key: join key
+        suffix: suffix that will be applied to columns with the same name
+    :return: dataframe with the result of the merge
     """
-    return pd.merge(df_players, df_teams, how="inner", left_on="team_id", right_on="id", suffixes=("_player", "_team"))
+    left_df = left_df_properties["df"]
+    left_key = left_df_properties["key"]
+    left_suffix = left_df_properties["suffix"]
+
+    right_df = right_df_properties["df"]
+    right_key = right_df_properties["key"]
+    right_suffix = right_df_properties["suffix"]
+
+    return pd.merge(left_df, right_df, how=join_type, left_on=left_key, right_on=right_key, suffixes=(left_suffix, right_suffix))
 
 
-def check_position_values(row):
+def check_column_values(row, column_name, column_values):
     """
     Description:
-        validate if column position contain the values in the list position_values
+        validate if a column has only the columns expected
+    :param column_values: list of values that will be checked
+    :param column_name: column's name to be checked
     :param row: dataframe's row to with the column position to be validated
     :return:
-        True if the value in the column position is in the list position_values
-        False if the value in the column position is not in the list position_values
+        True if the value in the column is in the list column values
+        True if the value in the column is not in the list column values
     """
-    position_values = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "P", "DH"]
-
-    if row["position"] in position_values:
+    if row[column_name] in column_values:
         return True
     else:
         return False
 
 
-def check_league_values(row):
+def compare_columns(row, column_names):
     """
     Description:
-        validate if column position contain the values in the list position_values
+        compare the values of two columns
+    :param column_names: columns that will be compared
     :param row: dataframe's row to with the column position to be validated
     :return:
-        True if the value in the column league_player is the same of the column league_team
-        False if the value in the column league_player is not the same of the column league_team
+        True if the value in the first column's value is the same of the second column's value
+        False if the value in the first column's value is not the same of the second column's value
     """
-    if row["league_player"] == row["league_team"]:
+    if row[column_names[0]] == row[column_names[1]]:
         return True
     else:
         return False
+
+
+def check_null_values(row, column_name):
+    """
+    Description:
+        check if a column has null values
+    :param column_name: columns that will be checked
+    :param row: dataframe's row to with the column position to be validated
+    :return:
+        True if the value in the column is null
+        False if the value in the column is not null
+    """
+    return pd.notnull(row[column_name])
 
 
 if __name__ == "__main__":
-    df_players_team = join_players_team(tables.df_players, tables.df_teams)
-    df_players_team["position_check"] = df_players_team.apply(lambda row: check_position_values(row), axis=1)
-    df_players_team["league_check"] = df_players_team.apply(lambda row: check_league_values(row), axis=1)
+    MAIN_DF = join_players_team(
+        left_df_properties={"df": tables.df_players, "key": "team_id", "suffix": "_player"},
+        right_df_properties={"df": tables.df_teams, "key": "id", "suffix": "_team"},
+        join_type="left"
+    )
 
-    df_players_team = df_players_team[(~df_players_team["position_check"]) | (~df_players_team["league_check"])]
+    check_values_columns = [
+        {"column_name": "position", "values": ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "P", "DH"]},
+        {"column_name": "league_player", "values": ["AL", "NL"]}
+    ]
 
-    df_players_team.to_csv("validation_job/data/dataframe_validation.csv", header=True, index=False)
+    for check in check_values_columns:
+        column_name = check["column_name"]
+        values = check["values"]
+        MAIN_DF[f"{column_name}_values_checked"] = MAIN_DF.apply(lambda row: check_column_values(row, column_name, values), axis=1)
+
+    check_compare_columns = [
+        {"column_name": "league", "columns_to_compare": ["league_player", "league_team"]},
+    ]
+
+    for check in check_compare_columns:
+        column_name = check["column_name"]
+        columns_to_compare = check["columns_to_compare"]
+        MAIN_DF[f"{column_name}_compare_checked"] = MAIN_DF.apply(lambda row: compare_columns(row, columns_to_compare), axis=1)
+
+    check_null_value = [
+        {"column_name": "id_team"},
+    ]
+
+    for check in check_null_value:
+        column_name = check["column_name"]
+        MAIN_DF[f"{column_name}_null_value_checked"] = MAIN_DF.apply(lambda row: check_null_values(row, column_name), axis=1)
+
+    # df_players_team = df_players_team[(~df_players_team["position_check"]) | (~df_players_team["league_check"])]
+
+    MAIN_DF.to_csv("validation_job/output_data/dataframe_validation.csv", header=True, index=False)
+    print(MAIN_DF)
