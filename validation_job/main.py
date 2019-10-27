@@ -28,49 +28,59 @@ def join_dataframes(left_df_properties, right_df_properties, join_type):
     return pd.merge(left_df, right_df, how=join_type, left_on=left_key, right_on=right_key, suffixes=(left_suffix, right_suffix))
 
 
-def check_column_values(row, column_name, column_values):
+def check_column_values(row, args):
     """
     Description:
-        validate if a column has only the columns expected
-    :param column_values: list of values that will be checked
+        validate if a column has only the expected values
+    :param args: dict with the args of the function
+        column_values: list of values that will be checked
+        column_name: column's name to be checked
     :param column_name: column's name to be checked
     :param row: dataframe's row to with the column position to be validated
     :return:
         True if the value in the column is in the list column values
         True if the value in the column is not in the list column values
     """
+    column_values = args["column_values"]
+    column_name = args["column_name"]
+
     if row[column_name] in column_values:
         return True
     else:
         return False
 
 
-def compare_columns(row, column_names):
+def compare_columns(row, args):
     """
     Description:
         compare the values of two columns
-    :param column_names: columns that will be compared
+    :param args: dict with the args of the function
+        columns_to_compare: list with the columns that will be compared
     :param row: dataframe's row to with the column position to be validated
     :return:
         True if the value in the first column's value is the same of the second column's value
         False if the value in the first column's value is not the same of the second column's value
     """
+    column_names = args["columns_to_compare"]
+
     if row[column_names[0]] == row[column_names[1]]:
         return True
     else:
         return False
 
 
-def check_null_values(row, column_name):
+def check_null_values(row, args):
     """
     Description:
         check if a column has null values
-    :param column_name: columns that will be checked
+    :param args: dict with the args of the function
+        column_name: columns that will be checked
     :param row: dataframe's row to with the column position to be validated
     :return:
         True if the value in the column is null
         False if the value in the column is not null
     """
+    column_name = args["column_name"]
     return pd.notnull(row[column_name])
 
 
@@ -81,35 +91,25 @@ if __name__ == "__main__":
         join_type="left"
     )
 
-    check_values_columns = [
-        {"column_name": "position", "output_column_name": "position_value_checked", "values": ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "P", "DH"]},
-        {"column_name": "league_player", "output_column_name": "league_player_value_checked", "values": ["AL", "NL"]}
+    validation_list = [
+        {"output_column_name": "position_value_checked", "args": {"column_name": "position", "column_values": ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "P", "DH"]},
+         "function": lambda row, args: check_column_values(row, args)},
+
+        {"output_column_name": "league_player_value_checked", "args": {"column_name": "league_player", "column_values": ["AL", "NL"]},
+         "function": lambda row, args: check_column_values(row, args)},
+
+        {"output_column_name": "league_compare_value_checked", "args": {"columns_to_compare": ["league_player", "league_team"]},
+         "function": lambda row, args: compare_columns(row, args)},
+
+        {"output_column_name": "id_team_null_value_checked", "args": {"column_name": "id_team"},
+         "function": lambda row, args: check_null_values(row, args)},
     ]
 
-    for check in check_values_columns:
-        column_name = check["column_name"]
-        values = check["values"]
-        output_column_name = check["output_column_name"]
-        MAIN_DF[output_column_name] = MAIN_DF.apply(lambda row: check_column_values(row, column_name, values), axis=1)
-
-    check_compare_columns = [
-        {"column_name": "league", "output_column_name": "league_compare_value_checked", "columns_to_compare": ["league_player", "league_team"]},
-    ]
-
-    for check in check_compare_columns:
-        column_name = check["column_name"]
-        columns_to_compare = check["columns_to_compare"]
-        output_column_name = check["output_column_name"]
-        MAIN_DF[output_column_name] = MAIN_DF.apply(lambda row: compare_columns(row, columns_to_compare), axis=1)
-
-    check_null_value = [
-        {"column_name": "id_team", "output_column_name": "id_team_null_value_checked"},
-    ]
-
-    for check in check_null_value:
-        column_name = check["column_name"]
-        output_column_name = check["output_column_name"]
-        MAIN_DF[output_column_name] = MAIN_DF.apply(lambda row: check_null_values(row, column_name), axis=1)
+    for validation in validation_list:
+        args = validation["args"]
+        output_column_name = validation["output_column_name"]
+        function = validation["function"]
+        MAIN_DF[output_column_name] = MAIN_DF.apply(lambda row: function(row, args), axis=1)
 
     # df_players_team = df_players_team[(~df_players_team["position_check"]) | (~df_players_team["league_check"])]
 
