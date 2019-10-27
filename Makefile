@@ -1,5 +1,5 @@
-install_libs:
-	@pip3 install -r requirements.txt
+install_deps:
+	@pip3 install -r requirements.txt --user
 
-run:
+run: install_deps
 	@python3 validation_job/main.py
