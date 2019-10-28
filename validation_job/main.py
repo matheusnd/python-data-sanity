@@ -99,6 +99,13 @@ def check_is_ascii(row, args):
 
 
 def filter_check_fail(df, column_names):
+    """
+    Description:
+        filter the validation that have failed
+    :param df: dataframe that will be filtered
+    :param column_names: list of validation columns that will be filtered
+    :return: dataframe with only the row that have failed in the tests
+    """
     filter_string = ""
     for column in column_names:
         filter_string = f"{column} == False | {filter_string}"
