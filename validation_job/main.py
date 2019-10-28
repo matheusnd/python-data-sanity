@@ -98,6 +98,14 @@ def check_is_ascii(row, args):
     return all(ord(c) < 128 for c in row[column_name])
 
 
+def filter_check_fail(df, column_names):
+    filter_string = ""
+    for column in column_names:
+        filter_string = f"{column} == False | {filter_string}"
+
+    return df.query(filter_string.strip()[:-1])
+
+
 if __name__ == "__main__":
     MAIN_DF = join_dataframes(
         left_df_properties={"df": tables.df_players, "key": "team_id", "suffix": "_player"},
@@ -122,13 +130,14 @@ if __name__ == "__main__":
          "function": lambda row, args: check_is_ascii(row, args)},
     ]
 
+    check_column_filter = []
     for validation in validation_list:
         args = validation["args"]
         output_column_name = validation["output_column_name"]
         function = validation["function"]
+        check_column_filter.append(output_column_name)
         MAIN_DF[output_column_name] = MAIN_DF.apply(lambda row: function(row, args), axis=1)
 
-    # df_players_team = df_players_team[(~df_players_team["position_check"]) | (~df_players_team["league_check"])]
-
+    MAIN_DF = filter_check_fail(MAIN_DF, check_column_filter)
     MAIN_DF.to_csv("validation_job/output_data/dataframe_validation.csv", header=True, index=False)
     print(MAIN_DF)
