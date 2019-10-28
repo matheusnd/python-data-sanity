@@ -13,7 +13,7 @@ make run
 ```
 
 ## Adding new validations
-There is a list with all validations that will be performed by the job:
+There is a list with all validations that will be performed by the job.
 
 ```python
 validation_list = [
@@ -36,3 +36,5 @@ validation_list = [
 - **output_column_name**: name of the column that will store the validation result
 - **args**: arguments of the validation function
 - **function**: function responsible for execute the data validation  
+
+To create new validation you can create a new validation function or reuse a existing function in a new column.
