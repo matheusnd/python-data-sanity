@@ -5,7 +5,7 @@ import pandas as pd
 def join_dataframes(left_df_properties, right_df_properties, join_type):
     """
     Description:
-        merge the dataframes according to the properties
+        merge two dataframes according to the properties
     :param join_type: type of the join that will be applied
     :param right_df_properties: right dataframe's properties
         df: dataframe object
@@ -35,8 +35,7 @@ def check_column_values(row, args):
     :param args: dict with the args of the function
         column_values: list of values that will be checked
         column_name: column's name to be checked
-    :param column_name: column's name to be checked
-    :param row: dataframe's row to with the column position to be validated
+    :param row: dataframe's row to to be validated
     :return:
         True if the value in the column is in the list column values
         True if the value in the column is not in the list column values
@@ -56,7 +55,7 @@ def compare_columns(row, args):
         compare the values of two columns
     :param args: dict with the args of the function
         columns_to_compare: list with the columns that will be compared
-    :param row: dataframe's row to with the column position to be validated
+    :param row: dataframe's row to to be validated
     :return:
         True if the value in the first column's value is the same of the second column's value
         False if the value in the first column's value is not the same of the second column's value
@@ -75,13 +74,28 @@ def check_null_values(row, args):
         check if a column has null values
     :param args: dict with the args of the function
         column_name: columns that will be checked
-    :param row: dataframe's row to with the column position to be validated
+    :param row: dataframe's row to to be validated
     :return:
         True if the value in the column is null
         False if the value in the column is not null
     """
     column_name = args["column_name"]
     return pd.notnull(row[column_name])
+
+
+def check_is_ascii(row, args):
+    """
+    Description:
+        check if a column has all characters as ASCII.
+    :param args: dict with the args of the function
+        column_name: columns that will be checked
+    :param row: dataframe's row to to be validated
+    :return:
+        True if the column has only ASCII characters.
+        False if the column hasn't only ASCII characters.
+    """
+    column_name = args["column_name"]
+    return all(ord(c) < 128 for c in row[column_name])
 
 
 if __name__ == "__main__":
@@ -103,6 +117,9 @@ if __name__ == "__main__":
 
         {"output_column_name": "id_team_null_value_checked", "args": {"column_name": "id_team"},
          "function": lambda row, args: check_null_values(row, args)},
+
+        {"output_column_name": "player_first_name_ascii_checked", "args": {"column_name": "first_name"},
+         "function": lambda row, args: check_is_ascii(row, args)},
     ]
 
     for validation in validation_list:
